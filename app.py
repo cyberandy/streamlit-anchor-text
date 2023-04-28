@@ -80,21 +80,25 @@ def generate_anchor_text(_keyword, _title, max_chars=19):
 
 # Process form input
 if submit_button:
-    title_main_query_pairs = title_main_queries.split("\n")
+    if not title_main_queries:
+        st.error("Please enter at least one title and main query pair.")
+    else:
+        # Create table to display results
+        title_main_query_pairs = title_main_queries.split("\n")
 
-    # Create table to display results
-    st.write("## Results")
+        # Create table to display results
+        st.write("## Results")
 
-    table_data = [["Title", "Main Query", "Anchor Text"]]
+        table_data = [["Title", "Main Query", "Anchor Text"]]
 
-    for title_main_query in title_main_query_pairs:
-        title, main_query = title_main_query.split(",")
+        for title_main_query in title_main_query_pairs:
+            title, main_query = title_main_query.split(",")
 
-        # Generate anchor text using provided function
-        anchor_text = generate_anchor_text(
-            main_query, title, max_chars=int(max_chars))
+            # Generate anchor text using provided function
+            anchor_text = generate_anchor_text(
+                main_query, title, max_chars=int(max_chars))
 
-        # Add row to table data
-        table_data.append([title, main_query, anchor_text])
+            # Add row to table data
+            table_data.append([title, main_query, anchor_text])
 
-    st.table(table_data)
+        st.table(table_data)
