@@ -16,7 +16,16 @@ HUGGINGFACEHUB_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
 st.sidebar.image("img/logo-wordlift.png")
 st.sidebar.title('Optimize your anchor text 🔎')
 st.sidebar.header("Settings")
-prompt_goes_here = st.sidebar.text_area("Enter your prompt:", height=300)
+prompt_goes_here = st.sidebar.text_area("Enter your prompt:", value='''You are a SEO for a premium food and lifestyle brand.
+    As content editor and SEO, read the keyword below along with the page's title and write an adequate and concise anchor text to reinforce the keyword targeting.
+    Remain neutral and follow the examples below:
+    Title: Affogato
+    Keyword: affogato recipe
+    Anchor text: affogato recipe
+
+    Title: Secret Blueberry Muffins
+    Keyword: bluberry muffins
+    Anchor text: bluberry muffins''', height=300)
 max_chars = st.sidebar.number_input(
     "Enter maximum number of characters for anchor text:", value=19)
 
@@ -35,7 +44,7 @@ This is a SEO experiment by [WordLift](https://wordlift.io/).""")
 form = st.form(key="form")
 form.header("Title and Main Queries")
 title_main_queries = form.text_area(
-    "Enter title and main query pairs (one per line, comma separated):")
+    "Enter title and main query pairs (one per line, comma separated):", value="Spicy stuffed sausage and cheese croissants, sausage croissant")
 submit_button = form.form_submit_button(label="Submit")
 
 
