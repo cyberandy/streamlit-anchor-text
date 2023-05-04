@@ -104,7 +104,7 @@ if submit_button:
         # Create table to display results
         st.write("## Results")
 
-        table_data = [["Title", "Main Query", "Anchor Text"]]
+        table_data = []
 
         for title_main_query in title_main_query_pairs:
             title, main_query = title_main_query.split(",")
@@ -116,11 +116,11 @@ if submit_button:
             # Add row to table data
             table_data.append([title, main_query, anchor_text])
 
-        st.table(table_data)
-
-        # Convert table_data list to a dataframe
+        # Create dataframe from table data
         df = pd.DataFrame(table_data, columns=[
                           'Title', 'Main Query', 'Anchor Text'])
+
+        st.table(df)
 
         @st.cache_data
         def convert_df(df):
