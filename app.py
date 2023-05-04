@@ -1,5 +1,6 @@
 import streamlit as st
 from langchain import LLMChain, HuggingFaceHub, PromptTemplate
+import pandas as pd
 
 # Set up Streamlit
 st.set_page_config(page_title="Anchor Text Optimization in SEO",
@@ -29,6 +30,10 @@ prompt_goes_here = st.sidebar.text_area("Enter your prompt:", value='''You are a
 max_chars = st.sidebar.number_input(
     "Enter maximum number of characters for anchor text:", value=19)
 
+repo_id = st.sidebar.selectbox(
+    "Select your model",
+    ("bigscience/bloom", "google/flan-t5-xxl", "google/flan-ul2")
+)
 st.sidebar.write("""
 Try our latest tool to optimize your anchor text using LLMs.
 \n\n
@@ -42,7 +47,7 @@ This is a SEO experiment by [WordLift](https://wordlift.io/).""")
 
 # Create form for title and main queries
 form = st.form(key="form")
-form.header("Title and Main Queries")
+form.header("Title and Main Query")
 title_main_queries = form.text_area(
     "Enter title and main query pairs (one per line, comma separated):", value="Spicy stuffed sausage and cheese croissants, sausage croissant")
 submit_button = form.form_submit_button(label="Submit")
@@ -61,7 +66,8 @@ def generate_anchor_text(_keyword, _title, max_chars=19):
 
     # using HF
     llm_chain = LLMChain(prompt=prompt, llm=HuggingFaceHub(
-        repo_id="google/flan-ul2", model_kwargs={"temperature": 0.4, "max_length": 64}))
+        #    repo_id="google/flan-ul2", model_kwargs={"temperature": 0.4, "max_length": 64}))
+        repo_id=repo_id, model_kwargs={"temperature": 0.4, "max_length": 64}))
 
     anchor_text = llm_chain.run(**run_statement)
 
@@ -111,3 +117,28 @@ if submit_button:
             table_data.append([title, main_query, anchor_text])
 
         st.table(table_data)
+
+        # Convert table_data list to a dataframe
+        df = pd.DataFrame(table_data, columns=[
+                          'Title', 'Main Query', 'Anchor Text'])
+
+        @st.cache_data
+        def convert_df(df):
+            return df.to_csv(index=False).encode('utf-8')
+
+        csv = convert_df(df)
+
+        st.download_button(
+            "Press to Download",
+            csv,
+            "file.csv",
+            "text/csv",
+            key='download-csv'
+        )
+
+
+# ---------------------------------------------------------------------------- #
+# Adding the download button for the CSV
+# ---------------------------------------------------------------------------- #
+
+# Add a button to download the data
