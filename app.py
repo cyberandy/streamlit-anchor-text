@@ -49,9 +49,9 @@ st.sidebar.write(
     """
 Try our latest tool to optimize your anchor text using LLMs.
 \n\n
-Have a question? [Let's talk](https://wordlift.io/contact-us) about it!.
+This is a SEO experiment by [WordLift](https://wordlift.io/) on Generative AI applied to [Dynamic Internal Links](https://wordlift.io/blog/en/dynamic-internal-links-in-seo/).
 \n\n
-This is a SEO experiment by [WordLift](https://wordlift.io/)."""
+Have a question? [Let's talk](https://wordlift.io/contact-us) about it!."""
 )
 
 # ---------------------------------------------------------------------------- #
