@@ -3,8 +3,9 @@ from langchain import LLMChain, HuggingFaceHub, PromptTemplate
 import pandas as pd
 
 # Set up Streamlit
-st.set_page_config(page_title="Anchor Text Optimization in SEO",
-                   page_icon="img/fav-ico.png")
+st.set_page_config(
+    page_title="Anchor Text Optimization in SEO", page_icon="img/fav-ico.png"
+)
 
 # Load Hugging Face API token from secrets.toml
 HUGGINGFACEHUB_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
@@ -15,9 +16,11 @@ HUGGINGFACEHUB_API_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
 # Sidebar
 # ---------------------------------------------------------------------------- #
 st.sidebar.image("img/logo-wordlift.png")
-st.sidebar.title('Optimize your anchor text 🔎')
+st.sidebar.title("Optimize your anchor text 🔎")
 st.sidebar.header("Settings")
-prompt_goes_here = st.sidebar.text_area("Enter your prompt:", value='''You are a SEO for a premium food and lifestyle brand.
+prompt_goes_here = st.sidebar.text_area(
+    "Enter your prompt:",
+    value="""You are a SEO for a premium food and lifestyle brand.
     As content editor and SEO, read the keyword below along with the page's title and write an adequate and concise anchor text to reinforce the keyword targeting.
     Remain neutral and follow the examples below:
     Title: Affogato
@@ -26,20 +29,30 @@ prompt_goes_here = st.sidebar.text_area("Enter your prompt:", value='''You are a
 
     Title: Secret Blueberry Muffins
     Keyword: bluberry muffins
-    Anchor text: bluberry muffins''', height=300)
+    Anchor text: bluberry muffins""",
+    height=300,
+)
 max_chars = st.sidebar.number_input(
-    "Enter maximum number of characters for anchor text:", value=19)
+    "Enter maximum number of characters for anchor text:", value=19
+)
 
 repo_id = st.sidebar.selectbox(
     "Select your model",
-    ("bigscience/bloom", "google/flan-t5-xxl", "google/flan-ul2")
+    (
+        "tiiuae/falcon-7b-instruct",
+        "bigscience/bloom",
+        "google/flan-t5-xxl",
+        "google/flan-ul2",
+    ),
 )
-st.sidebar.write("""
+st.sidebar.write(
+    """
 Try our latest tool to optimize your anchor text using LLMs.
 \n\n
 Have a question? [Let's talk](https://wordlift.io/contact-us) about it!.
 \n\n
-This is a SEO experiment by [WordLift](https://wordlift.io/).""")
+This is a SEO experiment by [WordLift](https://wordlift.io/)."""
+)
 
 # ---------------------------------------------------------------------------- #
 # Sidebar
@@ -49,25 +62,33 @@ This is a SEO experiment by [WordLift](https://wordlift.io/).""")
 form = st.form(key="form")
 form.header("Title and Main Query")
 title_main_queries = form.text_area(
-    "Enter title and main query pairs (one per line, comma separated):", value="Spicy stuffed sausage and cheese croissants, sausage croissant")
+    "Enter title and main query pairs (one per line, comma separated):",
+    value="Spicy stuffed sausage and cheese croissants, sausage croissant",
+)
 submit_button = form.form_submit_button(label="Submit")
 
 
 def generate_anchor_text(_keyword, _title, max_chars=19):
-
     # Setting up the prompt
-    prompt_tmp = prompt_goes_here + '''Title: {title}\n
+    prompt_tmp = (
+        prompt_goes_here
+        + """Title: {title}\n
     Keyword: {keyword}\n
-    Anchor text:'''
+    Anchor text:"""
+    )
     # Creating the prompt
-    prompt = PromptTemplate(template=prompt_tmp,
-                            input_variables=["keyword", "title"])
+    prompt = PromptTemplate(template=prompt_tmp, input_variables=["keyword", "title"])
     run_statement = {"keyword": _keyword, "title": _title}
 
     # using HF
-    llm_chain = LLMChain(prompt=prompt, llm=HuggingFaceHub(
-        #    repo_id="google/flan-ul2", model_kwargs={"temperature": 0.4, "max_length": 64}))
-        repo_id=repo_id, model_kwargs={"temperature": 0.4, "max_length": 64}))
+    llm_chain = LLMChain(
+        prompt=prompt,
+        llm=HuggingFaceHub(
+            #    repo_id="google/flan-ul2", model_kwargs={"temperature": 0.4, "max_length": 64}))
+            repo_id=repo_id,
+            model_kwargs={"temperature": 0.4, "max_length": 64},
+        ),
+    )
 
     anchor_text = llm_chain.run(**run_statement)
 
@@ -77,18 +98,18 @@ def generate_anchor_text(_keyword, _title, max_chars=19):
     # Capitalize the first letter of each word
     words = [word.capitalize() for word in words]
     # Join the words back into a single string
-    anchor_text = ' '.join(words)
+    anchor_text = " ".join(words)
     # While the length of anchor_text is greater than max_chars characters
     while len(anchor_text) > max_chars:
         # Remove the last word from the list of words
         words = words[:-1]
         # Join the remaining words back into a single string
-        anchor_text = ' '.join(words)
+        anchor_text = " ".join(words)
         # Remove the last word from the list of words if it ends with "and", "&", or "for"
         last_word = words[-1]
         if last_word.lower() in ["and", "&", "for"]:
             words = words[:-1]
-            anchor_text = ' '.join(words)
+            anchor_text = " ".join(words)
 
     return anchor_text
 
@@ -111,29 +132,25 @@ if submit_button:
 
             # Generate anchor text using provided function
             anchor_text = generate_anchor_text(
-                main_query, title, max_chars=int(max_chars))
+                main_query, title, max_chars=int(max_chars)
+            )
 
             # Add row to table data
             table_data.append([title, main_query, anchor_text])
 
         # Create dataframe from table data
-        df = pd.DataFrame(table_data, columns=[
-                          'Title', 'Main Query', 'Anchor Text'])
+        df = pd.DataFrame(table_data, columns=["Title", "Main Query", "Anchor Text"])
 
         st.table(df)
 
         @st.cache_data
         def convert_df(df):
-            return df.to_csv(index=False).encode('utf-8')
+            return df.to_csv(index=False).encode("utf-8")
 
         csv = convert_df(df)
 
         st.download_button(
-            "Press to Download",
-            csv,
-            "file.csv",
-            "text/csv",
-            key='download-csv'
+            "Press to Download", csv, "file.csv", "text/csv", key="download-csv"
         )
 
 
