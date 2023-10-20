@@ -39,6 +39,7 @@ max_chars = st.sidebar.number_input(
 repo_id = st.sidebar.selectbox(
     "Select your model",
     (
+        "mistralai/Mistral-7B-v0.1",
         "tiiuae/falcon-7b-instruct",
         "bigscience/bloom",
         "google/flan-t5-xxl",
