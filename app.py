@@ -1,6 +1,7 @@
 import streamlit as st
-from langchain import LLMChain, HuggingFaceHub, PromptTemplate
 import pandas as pd
+from huggingface_hub import InferenceClient
+import os
 
 # Set up Streamlit
 st.set_page_config(
@@ -69,50 +70,110 @@ title_main_queries = form.text_area(
 submit_button = form.form_submit_button(label="Submit")
 
 
-def generate_anchor_text(_keyword, _title, max_chars=19):
+def generate_anchor_text(_keyword, _title, _model="hf"):
+
     # Setting up the prompt
-    prompt_tmp = (
-        prompt_goes_here
-        + """Title: {title}\n
-    Keyword: {keyword}\n
-    Anchor text:"""
-    )
-    # Creating the prompt
-    prompt = PromptTemplate(template=prompt_tmp, input_variables=["keyword", "title"])
-    run_statement = {"keyword": _keyword, "title": _title}
+    prompt = f'''Glasses.com is a renowned retailer specializing in glasses and sunglasses online. As an SEO and content editor for Glasses.com, your task is to create a concise and appropriate anchor text to enhance keyword targeting, using the provided keyword and page title. Ensure to maintain a neutral tone and adhere to the examples below for guidance:
 
-    # using HF
-    llm_chain = LLMChain(
-        prompt=prompt,
-        llm=HuggingFaceHub(
-            #    repo_id="google/flan-ul2", model_kwargs={"temperature": 0.4, "max_length": 64}))
-            repo_id=repo_id,
-            model_kwargs={"temperature": 0.4, "max_length": 64},
-        ),
-    )
+- Title: Arnette Glasses and Prescription Sunglasses
+  - Keyword: arnette
+  - Anchor text: Shop Arnette Glasses
 
-    anchor_text = llm_chain.run(**run_statement)
+- Title: Armani Exchange Glasses & Sunglasses: Prescription
+  - Keyword: prescription sunglass man
+  - Anchor text: A|X Prescription Sunglasses
 
-    # Adding controls
-    # Split the anchor_text into a list of words
-    words = anchor_text.split()
-    # Capitalize the first letter of each word
-    words = [word.capitalize() for word in words]
-    # Join the words back into a single string
-    anchor_text = " ".join(words)
-    # While the length of anchor_text is greater than max_chars characters
-    while len(anchor_text) > max_chars:
-        # Remove the last word from the list of words
-        words = words[:-1]
-        # Join the remaining words back into a single string
-        anchor_text = " ".join(words)
-        # Remove the last word from the list of words if it ends with "and", "&", or "for"
-        last_word = words[-1]
-        if last_word.lower() in ["and", "&", "for"]:
+- Title: Oakley® Prescription Sunglasses & Glasses
+  - Keyword: sunglass
+  - Anchor text: Browse Oakley Sunglasses
+
+- Title: Starck Sunglasses & Glasses - Quality Eyewear
+  - Keyword: starck biotech paris
+  - Anchor text: Starck Biotech Paris Eyewear
+
+- Title: Prescription Sunglasses for Men
+  - Keyword: prescription sunglass man
+  - Anchor text: Men's Prescription Sunglasses
+
+- Title: Durable Prescription Eyeglasses for Women
+  - Keyword: glass
+  - Anchor text: Women's Eyeglasses
+
+- Title: High-Quality Prescription Night Driving Glasses
+  - Keyword: driving glasses
+  - Anchor text: Night Driving Glasses
+
+- Title: Stylish Prescription Sunglasses For Women
+  - Keyword: prescription sunglasses for women
+  - Anchor text: Women's Prescription Sunglasses
+
+- Title: 30% off
+  - Keyword: 30% off
+  - Anchor text: Buy 30% off
+
+- Title: Gucci Glasses
+  - Keyword: Gucci Gc002013
+  - Anchor text: Gucci Glasses
+
+- Title: Arnette Glasses and Prescription Sunglasses
+  - Keyword: arnette glasses
+  - Anchor text: Arnette Glasses
+
+- Title: Top Sunglasses Designer
+  - Keyword: luxury sunglasses brands
+  - Anchor text: Designer Sunglasses
+
+- Title: Vogue Eyewear Sunglasses for Men
+  - Keyword: Vogue Eyewear Sunglasses for Men
+  - Anchor text: Vogue Eyewear Men
+
+- Title: Saint Laurent Sunglasses for Women
+  - Keyword: Saint Laurent Sunglasses for Women
+  - Anchor text: SL Sunglasses Women
+
+- Title: Burberry Kid's
+  - Keyword: kids sunglasses
+  - Anchor text: Burberry Kids
+
+Now, based on these examples, review the title and the keyword below and provide in the response ONLY the Anchor text.
+
+- Title: {_title}
+  - Keyword: {_keyword}'''
+
+    try:
+        # Setting up the client for Hugging Face models
+        client = InferenceClient(token=os.environ["HUGGINGFACEHUB_API_TOKEN"])
+
+        # Correctly format the request according to InferenceClient expectations
+        response = client.post(
+            json={
+                "inputs": prompt,
+            },
+            model="mistralai/Mistral-7B-Instruct-v0.3"
+        )
+
+        response = response.decode('utf-8')
+        results = json.loads(response)
+
+        # Extract the anchor text from the response
+        anchor_text = results[0]['generated_text'].split('Anchor text:')[-1].strip()
+
+        # Process the anchor text to fit the constraints
+        words = anchor_text.split()
+        words = [word.capitalize() for word in words]
+        anchor_text = ' '.join(words)
+        while len(anchor_text) > 19:
             words = words[:-1]
-            anchor_text = " ".join(words)
+            anchor_text = ' '.join(words)
+            last_word = words[-1]
+            if last_word.lower() in ["and", "&", "for"]:
+                words = words[:-1]
+                anchor_text = ' '.join(words)
 
-    return anchor_text
+        return anchor_text
+    except Exception as e:
+        print(f"An error occurred while generating anchor text: {str(e)}")
+        return ""
 
 
 # Process form input
