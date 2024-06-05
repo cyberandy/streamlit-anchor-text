@@ -196,7 +196,7 @@ if submit_button:
 
             # Generate anchor text using provided function
             anchor_text = generate_anchor_text(
-                main_query, title, _max_chars=int(max_chars)
+                main_query, title, _max_chars=int(19)
             )
 
             # Add row to table data
