@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from huggingface_hub import InferenceClient
 import os
+import json
 
 # Set up Streamlit
 st.set_page_config(
@@ -40,6 +41,7 @@ max_chars = st.sidebar.number_input(
 repo_id = st.sidebar.selectbox(
     "Select your model",
     (
+        "mistralai/Mistral-7B-Instruct-v0.3",
         "mistralai/Mistral-7B-v0.1",
         "tiiuae/falcon-7b-instruct",
         "bigscience/bloom",
@@ -70,7 +72,7 @@ title_main_queries = form.text_area(
 submit_button = form.form_submit_button(label="Submit")
 
 
-def generate_anchor_text(_keyword, _title, _model="hf"):
+def generate_anchor_text(_keyword, _title, _max_chars="19"):
 
     # Setting up the prompt
     prompt = f'''Glasses.com is a renowned retailer specializing in glasses and sunglasses online. As an SEO and content editor for Glasses.com, your task is to create a concise and appropriate anchor text to enhance keyword targeting, using the provided keyword and page title. Ensure to maintain a neutral tone and adhere to the examples below for guidance:
@@ -162,7 +164,7 @@ Now, based on these examples, review the title and the keyword below and provide
         words = anchor_text.split()
         words = [word.capitalize() for word in words]
         anchor_text = ' '.join(words)
-        while len(anchor_text) > 19:
+        while len(anchor_text) > _max_chars:
             words = words[:-1]
             anchor_text = ' '.join(words)
             last_word = words[-1]
