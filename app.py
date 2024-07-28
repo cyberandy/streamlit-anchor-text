@@ -41,6 +41,8 @@ max_chars = st.sidebar.number_input(
 repo_id = st.sidebar.selectbox(
     "Select your model",
     (
+        "meta-llama/Meta-Llama-3.1-70B",
+        "meta-llama/Meta-Llama-3.1-405B-Instruct",
         "mistralai/Mistral-7B-Instruct-v0.3",
         "mistralai/Mistral-7B-v0.1",
         "tiiuae/falcon-7b-instruct",
